@@ -8,6 +8,7 @@ use App\Http\Requests\Student\UploadCvRequest;
 use App\Http\Resources\StudentResource;
 use App\Models\Student;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -25,7 +26,20 @@ class StudentController extends Controller
     {
         $student = auth('api')->user()->student;
         $this->authorize('update', $student);
-        $student->update($request->validated());
+
+        $data = $request->validated();
+
+        DB::transaction(function () use ($student, $data) {
+            $student->update($data);
+
+            $user = $student->user;
+            $first = $student->first_name ?? '';
+            $last = $student->last_name ?? '';
+            $combined = trim($first.' '.$last);
+            if ($combined !== '') {
+                $user->update(['name' => $combined]);
+            }
+        });
 
         return response()->json(new StudentResource($student->fresh()->load('user', 'supervisor')));
     }
@@ -39,7 +53,7 @@ class StudentController extends Controller
             Storage::disk('private')->delete($student->cv_path);
         }
 
-        $file = $request->file('cv');
+        $file = $request->file('cv') ?? $request->file('file');
         $path = $file->storeAs(
             'cvs/'.$student->id,
             Str::uuid()->toString().'.'.$file->getClientOriginalExtension(),

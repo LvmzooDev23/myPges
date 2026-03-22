@@ -21,6 +21,7 @@ const nav = computed(() => {
         label: 'Tableau de bord',
         icon: 'home',
       },
+      { to: '/student/profile', label: 'Mon profil', icon: 'user' },
       { to: '/internships', label: 'Offres de stage', icon: 'search' },
       { to: '/student/applications', label: 'Mes candidatures', icon: 'doc' },
       { to: '/student/report', label: 'Rapport de stage', icon: 'upload' },
@@ -29,12 +30,18 @@ const nav = computed(() => {
   if (r === 'company') {
     return [
       { to: '/company/dashboard', label: 'Vue d’ensemble', icon: 'home' },
+      { to: '/company/internships', label: 'Gérer les stages', icon: 'list' },
       { to: '/company/internships/new', label: 'Publier une offre', icon: 'plus' },
       { to: '/company/applications', label: 'Candidatures', icon: 'users' },
     ]
   }
   if (r === 'admin') {
-    return [{ to: '/admin/dashboard', label: 'Analytics', icon: 'chart' }]
+    return [
+      { to: '/admin/dashboard', label: 'Analytics', icon: 'chart' },
+      { to: '/admin/students', label: 'Étudiants', icon: 'academic' },
+      { to: '/admin/companies', label: 'Entreprises', icon: 'building' },
+      { to: '/admin/applications', label: 'Candidatures', icon: 'doc' },
+    ]
   }
   if (r === 'supervisor') {
     return [
@@ -47,10 +54,20 @@ const nav = computed(() => {
 
 function isActive(path) {
   if (path === '/internships') return route.path.startsWith('/internships')
+  if (path === '/company/internships/new') return route.path === '/company/internships/new'
+  if (path === '/company/internships') {
+    return route.path === '/company/internships' || /^\/company\/internships\/\d+\/edit$/.test(route.path)
+  }
+  if (path === '/admin/applications') return route.path.startsWith('/admin/applications')
   return route.path === path || route.path.startsWith(path + '/')
 }
 
 const icons = {
+  user: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
+  list: 'M4 6h16M4 10h16M4 14h16M4 18h16',
+  building:
+    'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+  academic: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
   home: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
   search: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z',
   doc: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',

@@ -16,17 +16,23 @@ class Internship extends Model
         'title',
         'description',
         'location',
+        'duration',
+        'stipend',
         'type',
         'start_date',
         'end_date',
         'slots',
         'status',
         'requirements',
+        'required_skills',
+        'deadline',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'deadline' => 'date',
+        'stipend' => 'decimal:2',
     ];
 
     public function company(): BelongsTo

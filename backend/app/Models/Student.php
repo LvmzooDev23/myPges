@@ -13,9 +13,15 @@ class Student extends Model
 
     protected $fillable = [
         'user_id',
+        'first_name',
+        'last_name',
         'student_number',
         'phone',
         'bio',
+        'university',
+        'degree',
+        'skills',
+        'linkedin_url',
         'cv_path',
         'supervisor_id',
     ];

@@ -1,14 +1,21 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import client from '../../api/client'
 import DashboardStats from '../../components/DashboardStats.vue'
 import UiCard from '../../components/ui/UiCard.vue'
+import ApplicationStatus from '../../components/ApplicationStatus.vue'
 
 const profile = ref(null)
+const applications = ref([])
 
 onMounted(async () => {
-  const { data } = await client.get('/student/profile')
-  profile.value = data.data ?? data
+  const [p, a] = await Promise.all([
+    client.get('/student/profile'),
+    client.get('/student/applications').catch(() => ({ data: { data: [] } })),
+  ])
+  profile.value = p.data.data ?? p.data
+  applications.value = a.data.data || a.data || []
 })
 </script>
 
@@ -30,11 +37,38 @@ onMounted(async () => {
       ]"
     />
 
+    <UiCard v-if="applications.length" title="Suivi des candidatures" subtitle="Statut à jour pour chaque envoi">
+      <ul class="divide-y divide-slate-100">
+        <li
+          v-for="x in applications.slice(0, 5)"
+          :key="x.id"
+          class="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+        >
+          <div>
+            <p class="font-medium text-slate-900">{{ x.internship?.title }}</p>
+            <p class="text-sm text-slate-500">{{ x.internship?.company?.name }}</p>
+          </div>
+          <ApplicationStatus :status="x.status" />
+        </li>
+      </ul>
+      <RouterLink
+        v-if="applications.length > 5"
+        to="/student/applications"
+        class="mt-4 inline-block text-sm font-semibold text-brand-600 hover:text-brand-700"
+      >
+        Voir toutes les candidatures
+      </RouterLink>
+    </UiCard>
+
     <UiCard v-if="profile" title="Prochaines étapes" subtitle="Pour maximiser vos chances">
       <ul class="space-y-3 text-sm text-slate-600">
         <li class="flex gap-3">
           <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">1</span>
-          Complétez votre profil et déposez votre CV.
+          <span>
+            Complétez votre
+            <RouterLink to="/student/profile" class="font-semibold text-brand-600 hover:text-brand-700">profil</RouterLink>
+            et déposez votre CV.
+          </span>
         </li>
         <li class="flex gap-3">
           <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">2</span>

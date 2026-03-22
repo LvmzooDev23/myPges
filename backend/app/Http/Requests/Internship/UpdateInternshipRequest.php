@@ -27,6 +27,10 @@ class UpdateInternshipRequest extends FormRequest
             'slots' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'status' => ['sometimes', Rule::in(['draft', 'published', 'closed'])],
             'requirements' => ['nullable', 'string'],
+            'duration' => ['nullable', 'string', 'max:255'],
+            'stipend' => ['nullable', 'numeric', 'min:0'],
+            'required_skills' => ['nullable', 'string'],
+            'deadline' => ['nullable', 'date'],
         ];
     }
 }

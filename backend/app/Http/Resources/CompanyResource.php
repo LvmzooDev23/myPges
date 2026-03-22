@@ -16,6 +16,7 @@ class CompanyResource extends JsonResource
             'id' => $this->id,
             'user' => new UserResource($this->whenLoaded('user')),
             'name' => $this->name,
+            'industry' => $this->industry,
             'legal_name' => $this->legal_name,
             'siret' => $this->siret,
             'description' => $this->description,

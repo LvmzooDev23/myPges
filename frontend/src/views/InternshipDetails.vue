@@ -50,11 +50,27 @@ onMounted(async () => {
       <div class="prose prose-slate max-w-none">
         <p class="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{{ internship.description }}</p>
       </div>
+      <div v-if="internship.required_skills" class="mt-6 border-t border-slate-100 pt-6">
+        <h3 class="text-sm font-semibold text-slate-900">Compétences requises</h3>
+        <p class="mt-2 whitespace-pre-wrap text-sm text-slate-600">{{ internship.required_skills }}</p>
+      </div>
       <div v-if="internship.requirements" class="mt-6 border-t border-slate-100 pt-6">
         <h3 class="text-sm font-semibold text-slate-900">Prérequis</h3>
         <p class="mt-2 whitespace-pre-wrap text-sm text-slate-600">{{ internship.requirements }}</p>
       </div>
       <dl class="mt-6 grid gap-4 border-t border-slate-100 pt-6 sm:grid-cols-2">
+        <div v-if="internship.duration">
+          <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Durée</dt>
+          <dd class="mt-1 text-sm font-medium text-slate-900">{{ internship.duration }}</dd>
+        </div>
+        <div v-if="internship.stipend != null && internship.stipend !== ''">
+          <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Indemnité</dt>
+          <dd class="mt-1 text-sm font-medium text-slate-900">{{ internship.stipend }} € / mois</dd>
+        </div>
+        <div v-if="internship.deadline">
+          <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Date limite</dt>
+          <dd class="mt-1 text-sm font-medium text-slate-900">{{ internship.deadline }}</dd>
+        </div>
         <div>
           <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">Début</dt>
           <dd class="mt-1 text-sm font-medium text-slate-900">{{ internship.start_date || '—' }}</dd>

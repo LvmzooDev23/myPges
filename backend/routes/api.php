@@ -37,6 +37,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('profile', [StudentController::class, 'profile']);
         Route::put('profile', [StudentController::class, 'update']);
         Route::post('cv', [StudentController::class, 'uploadCv']);
+        Route::post('upload-cv', [StudentController::class, 'uploadCv']);
         Route::get('cv/download', [StudentController::class, 'downloadCv']);
         Route::get('applications', [ApplicationController::class, 'studentIndex']);
         Route::post('internships/{internship}/apply', [ApplicationController::class, 'apply']);
@@ -50,6 +51,7 @@ Route::middleware('auth:api')->group(function () {
         Route::middleware('company.approved')->group(function () {
             Route::get('internships', [InternshipManageController::class, 'index']);
             Route::post('internships', [InternshipManageController::class, 'store']);
+            Route::get('internships/{internship}', [InternshipManageController::class, 'show']);
             Route::put('internships/{internship}', [InternshipManageController::class, 'update']);
             Route::delete('internships/{internship}', [InternshipManageController::class, 'destroy']);
             Route::get('internships/{internship}/applications', [ApplicationController::class, 'companyInternshipApplications']);
@@ -71,6 +73,9 @@ Route::middleware('auth:api')->group(function () {
         Route::get('students', [AdminController::class, 'students']);
         Route::get('companies', [AdminController::class, 'companies']);
         Route::get('internships', [AdminController::class, 'internships']);
+        Route::get('applications', [AdminController::class, 'applications']);
+        Route::get('applications/{application}', [AdminController::class, 'application']);
+        Route::get('applications/{application}/cv', [AdminController::class, 'downloadApplicationStudentCv']);
         Route::patch('companies/{company}/approval', [AdminController::class, 'approveCompany']);
     });
 

@@ -24,6 +24,13 @@ class InternshipManageController extends Controller
         return response()->json(InternshipResource::collection($list));
     }
 
+    public function show(Internship $internship): JsonResponse
+    {
+        $this->authorize('update', $internship);
+
+        return response()->json(new InternshipResource($internship->load('company')));
+    }
+
     public function store(StoreInternshipRequest $request): JsonResponse
     {
         $company = auth('api')->user()->company;

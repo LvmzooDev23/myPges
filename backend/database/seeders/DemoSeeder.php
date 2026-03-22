@@ -31,6 +31,12 @@ class DemoSeeder extends Seeder
         Student::query()->create([
             'user_id' => $studentUser->id,
             'student_number' => 'STU001',
+            'first_name' => 'Étudiant',
+            'last_name' => 'Démo',
+            'phone' => '+33 6 00 00 00 01',
+            'university' => 'Université Démo',
+            'degree' => 'Master Informatique',
+            'skills' => 'PHP, Laravel, Vue.js',
         ]);
 
         $companyUser = User::query()->create([
@@ -42,6 +48,7 @@ class DemoSeeder extends Seeder
         $company = Company::query()->create([
             'user_id' => $companyUser->id,
             'name' => 'TechCorp',
+            'industry' => 'Technologie',
             'approval_status' => 'approved',
             'approved_at' => now(),
         ]);
@@ -69,6 +76,10 @@ class DemoSeeder extends Seeder
             'slots' => 3,
             'status' => 'published',
             'requirements' => 'PHP, JavaScript',
+            'duration' => '6 mois',
+            'stipend' => 800,
+            'required_skills' => 'PHP, JavaScript, Git',
+            'deadline' => now()->addMonths(2)->toDateString(),
         ]);
     }
 }

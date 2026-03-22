@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import client from '../../api/client'
 import DashboardStats from '../../components/DashboardStats.vue'
 import UiCard from '../../components/ui/UiCard.vue'
@@ -47,6 +48,15 @@ const approvalVariant = (s) => {
         { label: 'Brouillons', value: internships.filter((x) => x.status === 'draft').length },
       ]"
     />
+
+    <UiCard v-if="profile?.approval_status === 'approved'" title="Offres" subtitle="Créez et gérez vos annonces">
+      <RouterLink
+        to="/company/internships"
+        class="inline-flex rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-500"
+      >
+        Gérer les stages
+      </RouterLink>
+    </UiCard>
 
     <UiCard v-if="profile?.approval_status !== 'approved'" title="Validation" subtitle="Votre compte doit être approuvé par un administrateur pour publier des offres.">
       <p class="text-sm text-amber-800">

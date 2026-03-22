@@ -1,8 +1,14 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import client from '../../api/client'
 import UiCard from '../../components/ui/UiCard.vue'
+
+const route = useRoute()
+const router = useRouter()
+const loading = ref(true)
+const saving = ref(false)
+const error = ref('')
 
 const form = ref({
   title: '',
@@ -19,20 +25,51 @@ const form = ref({
   required_skills: '',
   deadline: '',
 })
-const error = ref('')
-const router = useRouter()
+
+async function load() {
+  loading.value = true
+  error.value = ''
+  try {
+    const { data } = await client.get(`/company/internships/${route.params.id}`)
+    const i = data.data ?? data
+    form.value = {
+      title: i.title || '',
+      description: i.description || '',
+      location: i.location || '',
+      type: i.type || 'onsite',
+      start_date: i.start_date ? String(i.start_date).slice(0, 10) : '',
+      end_date: i.end_date ? String(i.end_date).slice(0, 10) : '',
+      slots: i.slots ?? 1,
+      status: i.status || 'draft',
+      requirements: i.requirements || '',
+      duration: i.duration || '',
+      stipend: i.stipend != null ? Number(i.stipend) : null,
+      required_skills: i.required_skills || '',
+      deadline: i.deadline ? String(i.deadline).slice(0, 10) : '',
+    }
+  } catch (e) {
+    error.value = e.response?.data?.message || 'Offre introuvable.'
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(load)
 
 async function submit() {
+  saving.value = true
   error.value = ''
   try {
     const payload = { ...form.value }
     if (payload.stipend === '' || payload.stipend === null) {
-      delete payload.stipend
+      payload.stipend = null
     }
-    await client.post('/company/internships', payload)
+    await client.put(`/company/internships/${route.params.id}`, payload)
     router.push('/company/internships')
   } catch (e) {
-    error.value = e.response?.data?.message || 'Erreur'
+    error.value = e.response?.data?.message || 'Erreur lors de l’enregistrement.'
+  } finally {
+    saving.value = false
   }
 }
 </script>
@@ -40,15 +77,19 @@ async function submit() {
 <template>
   <div class="mx-auto max-w-3xl space-y-6">
     <div>
-      <p class="text-sm font-medium text-brand-600">Publication</p>
-      <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Nouvelle offre de stage</h1>
+      <p class="text-sm font-medium text-brand-600">Modification</p>
+      <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Modifier l’offre</h1>
     </div>
 
-    <UiCard title="Informations générales" subtitle="Décrivez le poste et le contexte">
+    <div v-if="loading" class="flex justify-center py-16">
+      <div class="h-10 w-10 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+    </div>
+
+    <UiCard v-else title="Informations générales" subtitle="Mettez à jour le contenu de l’offre">
       <form class="space-y-4" @submit.prevent="submit">
         <div>
           <label class="text-sm font-medium text-slate-700">Intitulé du poste</label>
-          <input v-model="form.title" required class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
+          <input v-model="form.title" required class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm" />
         </div>
         <div>
           <label class="text-sm font-medium text-slate-700">Description</label>
@@ -56,7 +97,7 @@ async function submit() {
             v-model="form.description"
             rows="6"
             required
-            class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm"
           />
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
@@ -126,12 +167,22 @@ async function submit() {
           <textarea v-model="form.requirements" rows="3" class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm" />
         </div>
         <p v-if="error" class="text-sm font-medium text-rose-600">{{ error }}</p>
-        <button
-          type="submit"
-          class="w-full rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-500 sm:w-auto sm:px-8"
-        >
-          Enregistrer l’offre
-        </button>
+        <div class="flex flex-wrap gap-3">
+          <button
+            type="submit"
+            :disabled="saving"
+            class="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-500 disabled:opacity-50"
+          >
+            {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+          <button
+            type="button"
+            class="rounded-xl border border-slate-200 px-6 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            @click="router.push('/company/internships')"
+          >
+            Annuler
+          </button>
+        </div>
       </form>
     </UiCard>
   </div>
