@@ -29,44 +29,82 @@ async function submit() {
 </script>
 
 <template>
-  <div class="mx-auto flex max-w-lg flex-col gap-6 px-4 py-12">
-    <h1 class="text-2xl font-bold text-slate-900">Créer un compte</h1>
-    <form class="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="submit">
-      <div>
-        <label class="text-sm font-medium">Nom</label>
-        <input v-model="form.name" required class="mt-1 w-full rounded-lg border px-3 py-2" />
+  <div class="relative flex min-h-screen flex-col justify-center bg-gradient-to-b from-slate-50 to-brand-50/30 px-4 py-12">
+    <div class="absolute inset-x-0 top-0 h-64 bg-gradient-to-br from-brand-500/10 via-transparent to-transparent" />
+    <div class="relative mx-auto w-full max-w-lg">
+      <div class="mb-8 text-center">
+        <div
+          class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-lg font-bold text-white shadow-lg"
+        >
+          S
+        </div>
+        <h1 class="mt-4 text-2xl font-bold tracking-tight text-slate-900">Créer un compte</h1>
+        <p class="mt-2 text-sm text-slate-500">Rejoignez la plateforme en quelques étapes</p>
       </div>
-      <div>
-        <label class="text-sm font-medium">Email</label>
-        <input v-model="form.email" type="email" required class="mt-1 w-full rounded-lg border px-3 py-2" />
-      </div>
-      <div>
-        <label class="text-sm font-medium">Rôle</label>
-        <select v-model="form.role" class="mt-1 w-full rounded-lg border px-3 py-2">
-          <option value="student">Étudiant</option>
-          <option value="company">Entreprise</option>
-          <option value="supervisor">Superviseur</option>
-        </select>
-      </div>
-      <div v-if="form.role === 'company'">
-        <label class="text-sm font-medium">Nom de l'entreprise</label>
-        <input v-model="form.company_name" class="mt-1 w-full rounded-lg border px-3 py-2" />
-      </div>
-      <div>
-        <label class="text-sm font-medium">Mot de passe</label>
-        <input v-model="form.password" type="password" required class="mt-1 w-full rounded-lg border px-3 py-2" />
-      </div>
-      <div>
-        <label class="text-sm font-medium">Confirmation</label>
-        <input
-          v-model="form.password_confirmation"
-          type="password"
-          required
-          class="mt-1 w-full rounded-lg border px-3 py-2"
-        />
-      </div>
-      <p v-if="error" class="text-sm text-rose-600">{{ error }}</p>
-      <button type="submit" class="w-full rounded-lg bg-brand-600 py-2 font-medium text-white">S'inscrire</button>
-    </form>
+      <form
+        class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-soft sm:p-8"
+        @submit.prevent="submit"
+      >
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div class="sm:col-span-2">
+            <label class="text-sm font-medium text-slate-700">Nom complet</label>
+            <input v-model="form.name" required class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="text-sm font-medium text-slate-700">Email</label>
+            <input
+              v-model="form.email"
+              type="email"
+              required
+              class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="text-sm font-medium text-slate-700">Profil</label>
+            <select
+              v-model="form.role"
+              class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            >
+              <option value="student">Étudiant</option>
+              <option value="company">Entreprise</option>
+              <option value="supervisor">Superviseur</option>
+            </select>
+          </div>
+          <div v-if="form.role === 'company'" class="sm:col-span-2">
+            <label class="text-sm font-medium text-slate-700">Nom de l’entreprise</label>
+            <input v-model="form.company_name" class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-slate-700">Mot de passe</label>
+            <input
+              v-model="form.password"
+              type="password"
+              required
+              class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            />
+          </div>
+          <div>
+            <label class="text-sm font-medium text-slate-700">Confirmation</label>
+            <input
+              v-model="form.password_confirmation"
+              type="password"
+              required
+              class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            />
+          </div>
+        </div>
+        <p v-if="error" class="mt-4 text-sm font-medium text-rose-600">{{ error }}</p>
+        <button
+          type="submit"
+          class="mt-6 w-full rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500"
+        >
+          S’inscrire
+        </button>
+      </form>
+      <p class="mt-6 text-center text-sm text-slate-500">
+        Déjà inscrit ?
+        <router-link to="/login" class="font-semibold text-brand-600 hover:text-brand-700">Se connecter</router-link>
+      </p>
+    </div>
   </div>
 </template>

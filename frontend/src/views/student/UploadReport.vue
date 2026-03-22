@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import client from '../../api/client'
-import FileUploader from '../../components/FileUploader.vue'
+import FileDropzone from '../../components/ui/FileDropzone.vue'
+import UiCard from '../../components/ui/UiCard.vue'
 
 const applications = ref([])
 const applicationId = ref('')
@@ -27,37 +28,47 @@ async function submit() {
   await client.post(`/student/applications/${applicationId.value}/report`, fd, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
-  message.value = 'Rapport envoyé.'
+  message.value = 'Rapport envoyé avec succès.'
 }
 </script>
 
 <template>
-  <div class="max-w-lg">
-    <h1 class="text-xl font-bold">Rapport de stage</h1>
-    <div class="mt-6 space-y-4">
-      <div>
-        <label class="text-sm font-medium">Candidature acceptée</label>
-        <select v-model="applicationId" class="mt-1 w-full rounded-lg border px-3 py-2">
-          <option value="" disabled>Sélectionner</option>
-          <option v-for="a in applications" :key="a.id" :value="a.id">
-            {{ a.internship?.title }} (#{{ a.id }})
-          </option>
-        </select>
-      </div>
-      <div>
-        <label class="text-sm font-medium">Titre (optionnel)</label>
-        <input v-model="title" class="mt-1 w-full rounded-lg border px-3 py-2" />
-      </div>
-      <FileUploader label="Document PDF / Word" @selected="onFile" />
-      <button
-        type="button"
-        class="rounded-lg bg-brand-600 px-4 py-2 text-white disabled:opacity-50"
-        :disabled="!applicationId || !file"
-        @click="submit"
-      >
-        Envoyer
-      </button>
-      <p v-if="message" class="text-sm text-emerald-600">{{ message }}</p>
+  <div class="mx-auto max-w-2xl space-y-6">
+    <div>
+      <p class="text-sm font-medium text-brand-600">Stage</p>
+      <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Déposer un rapport</h1>
+      <p class="mt-2 text-sm text-slate-500">Formats acceptés : PDF, Word (max 10 Mo).</p>
     </div>
+
+    <UiCard title="Envoi du document" subtitle="Choisissez la candidature acceptée concernée">
+      <div class="space-y-6">
+        <div>
+          <label class="text-sm font-medium text-slate-700">Candidature</label>
+          <select
+            v-model="applicationId"
+            class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+          >
+            <option value="" disabled>Sélectionner…</option>
+            <option v-for="a in applications" :key="a.id" :value="a.id">
+              {{ a.internship?.title }} (#{{ a.id }})
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-700">Titre du rapport (optionnel)</label>
+          <input v-model="title" class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm shadow-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20" />
+        </div>
+        <FileDropzone label="Glissez votre fichier ici" @selected="onFile" />
+        <button
+          type="button"
+          class="w-full rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 disabled:cursor-not-allowed disabled:opacity-50"
+          :disabled="!applicationId || !file"
+          @click="submit"
+        >
+          Envoyer le rapport
+        </button>
+        <p v-if="message" class="text-center text-sm font-medium text-emerald-600">{{ message }}</p>
+      </div>
+    </UiCard>
   </div>
 </template>
