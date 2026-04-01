@@ -17,9 +17,10 @@ class StudentController extends Controller
 {
     public function profile(): JsonResponse
     {
-        $student = auth('api')->user()->student->load('user', 'supervisor.user');
+        $student = auth('api')->user()->student;
+        $this->authorize('view', $student);
 
-        return response()->json(new StudentResource($student));
+        return response()->json(new StudentResource($student->load('user', 'supervisor.user')));
     }
 
     public function update(UpdateStudentProfileRequest $request): JsonResponse
@@ -47,17 +48,17 @@ class StudentController extends Controller
     public function uploadCv(UploadCvRequest $request): JsonResponse
     {
         $student = auth('api')->user()->student;
-        $this->authorize('update', $student);
+        $this->authorize('uploadCv', $student);
 
         if ($student->cv_path) {
-            Storage::disk('private')->delete($student->cv_path);
+            Storage::disk('public')->delete($student->cv_path);
         }
 
         $file = $request->file('cv') ?? $request->file('file');
         $path = $file->storeAs(
-            'cvs/'.$student->id,
+            'cv/'.$student->id,
             Str::uuid()->toString().'.'.$file->getClientOriginalExtension(),
-            'private'
+            'public'
         );
         $student->update(['cv_path' => $path]);
 
@@ -70,12 +71,24 @@ class StudentController extends Controller
     public function downloadCv(): StreamedResponse|JsonResponse
     {
         $student = auth('api')->user()->student;
-        $this->authorize('update', $student);
+        $this->authorize('downloadCv', $student);
 
-        if (! $student->cv_path || ! Storage::disk('private')->exists($student->cv_path)) {
+        if (! $student->cv_path || ! Storage::disk('public')->exists($student->cv_path)) {
             return response()->json(['message' => 'Aucun CV.'], 404);
         }
 
-        return Storage::disk('private')->response($student->cv_path, 'cv.'.pathinfo($student->cv_path, PATHINFO_EXTENSION));
+        return Storage::disk('public')->response($student->cv_path, 'cv.'.pathinfo($student->cv_path, PATHINFO_EXTENSION));
+    }
+
+    public function viewCv(): StreamedResponse|JsonResponse
+    {
+        $student = auth('api')->user()->student;
+        $this->authorize('viewCv', $student);
+
+        if (! $student->cv_path || ! Storage::disk('public')->exists($student->cv_path)) {
+            return response()->json(['message' => 'Aucun CV.'], 404);
+        }
+
+        return Storage::disk('public')->response($student->cv_path);
     }
 }

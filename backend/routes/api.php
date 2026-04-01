@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\InternshipController;
 use App\Http\Controllers\Api\InternshipReportController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\StudentController;
+use App\Http\Controllers\Api\StudentDashboardController;
 use App\Http\Controllers\Api\SupervisorController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,7 +40,11 @@ Route::middleware('auth:api')->group(function () {
         Route::post('cv', [StudentController::class, 'uploadCv']);
         Route::post('upload-cv', [StudentController::class, 'uploadCv']);
         Route::get('cv/download', [StudentController::class, 'downloadCv']);
+        Route::get('cv', [StudentController::class, 'viewCv']);
         Route::get('applications', [ApplicationController::class, 'studentIndex']);
+        Route::get('application-tracking', [StudentDashboardController::class, 'applicationTracking']);
+        Route::get('recommended-internships', [StudentDashboardController::class, 'recommendedInternships']);
+        Route::get('dashboard-stats', [StudentDashboardController::class, 'dashboardStats']);
         Route::post('internships/{internship}/apply', [ApplicationController::class, 'apply']);
         Route::post('applications/{application}/report', [InternshipReportController::class, 'store']);
     });

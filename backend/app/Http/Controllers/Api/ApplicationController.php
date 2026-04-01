@@ -97,11 +97,63 @@ class ApplicationController extends Controller
                 $application->student->user,
                 'application_status',
                 'Mise à jour candidature',
-                'Votre candidature est : '.$payload['status'],
-                ['application_id' => $application->id]
+                'Votre candidature pour "'.$application->internship->title.'" est : '.$payload['status'],
+                ['application_id' => $application->id, 'internship_id' => $application->internship->id]
             );
+
+            // Send notification for new matching internships if accepted
+            if ($payload['status'] === 'accepted') {
+                $this->notifyMatchingInternships($application->student);
+            }
         });
 
         return response()->json(new ApplicationResource($application->fresh()->load(['internship.company', 'student.user'])));
+    }
+
+    private function notifyMatchingInternships(Student $student): void
+    {
+        // Find new internships that match the student's profile
+        $studentSkills = $student->skills ? explode(',', $student->skills) : [];
+        $studentDegree = $student->degree;
+
+        if (empty($studentSkills) && empty($studentDegree)) {
+            return;
+        }
+
+        $matchingInternships = Internship::where('status', 'published')
+            ->where('deadline', '>=', now())
+            ->where('created_at', '>', now()->subDays(7)) // Only recent internships
+            ->get()
+            ->filter(function ($internship) use ($studentSkills, $studentDegree) {
+                $score = 0;
+                $internshipSkills = $internship->required_skills ? explode(',', $internship->required_skills) : [];
+
+                // Skills matching
+                if (!empty($studentSkills) && !empty($internshipSkills)) {
+                    $matchingSkills = array_intersect($studentSkills, $internshipSkills);
+                    $score += (count($matchingSkills) / max(count($internshipSkills), 1)) * 70;
+                }
+
+                // Degree matching
+                if ($studentDegree && $internship->requirements) {
+                    $requirements = strtolower($internship->requirements);
+                    $degree = strtolower($studentDegree);
+                    if (strpos($requirements, $degree) !== false) {
+                        $score += 30;
+                    }
+                }
+
+                return $score > 40; // Only notify for good matches
+            });
+
+        if ($matchingInternships->count() > 0) {
+            $this->notifications->notify(
+                $student->user,
+                'new_internship',
+                'Nouveaux stages recommandés',
+                $matchingInternships->count() . ' nouveau' . ($matchingInternships->count() > 1 ? 'x' : '') . ' stage' . ($matchingInternships->count() > 1 ? 's' : '') . ' correspondant' . ($matchingInternships->count() > 1 ? 's' : '') . ' à votre profil',
+                ['count' => $matchingInternships->count()]
+            );
+        }
     }
 }

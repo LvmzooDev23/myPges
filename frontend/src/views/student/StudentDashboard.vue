@@ -2,64 +2,124 @@
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import client from '../../api/client'
-import DashboardStats from '../../components/DashboardStats.vue'
 import UiCard from '../../components/ui/UiCard.vue'
-import ApplicationStatus from '../../components/ApplicationStatus.vue'
+import StudentDashboardStats from '../../components/StudentDashboardStats.vue'
+import RecommendedInternships from '../../components/RecommendedInternships.vue'
+import ApplicationTracking from '../../components/ApplicationTracking.vue'
+import Notifications from '../../components/Notifications.vue'
 
 const profile = ref(null)
-const applications = ref([])
+const loading = ref(true)
 
 onMounted(async () => {
-  const [p, a] = await Promise.all([
-    client.get('/student/profile'),
-    client.get('/student/applications').catch(() => ({ data: { data: [] } })),
-  ])
-  profile.value = p.data.data ?? p.data
-  applications.value = a.data.data || a.data || []
+  try {
+    const { data } = await client.get('/student/profile')
+    profile.value = data.data ?? data
+  } catch (error) {
+    console.error('Failed to load profile:', error)
+  } finally {
+    loading.value = false
+  }
 })
 </script>
 
 <template>
   <div class="space-y-8">
-    <div>
-      <p class="text-sm font-medium text-brand-600">Bienvenue</p>
-      <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Tableau de bord étudiant</h1>
-      <p v-if="profile" class="mt-2 text-slate-600">
-        Bonjour <span class="font-semibold text-slate-900">{{ profile.user?.name }}</span> — gérez votre profil et vos candidatures.
-      </p>
+    <!-- Header with Notifications -->
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-sm font-medium text-brand-600">Bienvenue</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Tableau de bord étudiant</h1>
+        <p v-if="profile" class="mt-2 text-slate-600">
+          Bonjour <span class="font-semibold text-slate-900">{{ profile.user?.name }}</span> — gérez votre profil et vos candidatures.
+        </p>
+      </div>
+      <Notifications />
     </div>
 
-    <DashboardStats
-      v-if="profile"
-      :stats="[
-        { label: 'N° étudiant', value: profile.student_number || '—' },
-        { label: 'CV', value: profile.cv_path ? 'Déposé' : 'À compléter' },
-      ]"
-    />
-
-    <UiCard v-if="applications.length" title="Suivi des candidatures" subtitle="Statut à jour pour chaque envoi">
-      <ul class="divide-y divide-slate-100">
-        <li
-          v-for="x in applications.slice(0, 5)"
-          :key="x.id"
-          class="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-        >
-          <div>
-            <p class="font-medium text-slate-900">{{ x.internship?.title }}</p>
-            <p class="text-sm text-slate-500">{{ x.internship?.company?.name }}</p>
+    <!-- Profile Completion Alert -->
+    <UiCard 
+      v-if="profile && profile.profile_completion < 80" 
+      class="border-amber-200 bg-amber-50"
+    >
+      <div class="flex items-center space-x-3">
+        <div class="flex-shrink-0">
+          <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+            <span class="text-amber-600 font-semibold text-sm">!</span>
           </div>
-          <ApplicationStatus :status="x.status" />
-        </li>
-      </ul>
-      <RouterLink
-        v-if="applications.length > 5"
-        to="/student/applications"
-        class="mt-4 inline-block text-sm font-semibold text-brand-600 hover:text-brand-700"
-      >
-        Voir toutes les candidatures
-      </RouterLink>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-sm font-medium text-amber-800">Complétez votre profil</h3>
+          <p class="text-sm text-amber-700 mt-1">
+            Votre profil est complété à {{ profile.profile_completion }}%. 
+            Ajoutez les informations manquantes pour augmenter vos chances de trouver un stage.
+          </p>
+          <div class="mt-2">
+            <RouterLink 
+              to="/student/profile" 
+              class="text-sm font-medium text-amber-800 hover:text-amber-900"
+            >
+              Compléter mon profil →
+            </RouterLink>
+          </div>
+        </div>
+      </div>
     </UiCard>
 
+    <!-- Dashboard Stats -->
+    <StudentDashboardStats />
+
+    <!-- Quick Actions -->
+    <UiCard title="Actions rapides" subtitle="Accédez rapidement aux fonctionnalités principales">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <RouterLink 
+          to="/student/profile"
+          class="p-4 border border-slate-200 rounded-lg hover:border-brand-300 hover:shadow-md transition-all"
+        >
+          <div class="text-center">
+            <div class="w-12 h-12 bg-brand-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span class="text-2xl">👤</span>
+            </div>
+            <h3 class="font-medium text-slate-900">Mon Profil</h3>
+            <p class="text-sm text-slate-600 mt-1">{{ profile?.profile_completion || 0 }}% complété</p>
+          </div>
+        </RouterLink>
+
+        <RouterLink 
+          to="/internships"
+          class="p-4 border border-slate-200 rounded-lg hover:border-brand-300 hover:shadow-md transition-all"
+        >
+          <div class="text-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span class="text-2xl">🔍</span>
+            </div>
+            <h3 class="font-medium text-slate-900">Trouver un Stage</h3>
+            <p class="text-sm text-slate-600 mt-1">Parcourir les offres</p>
+          </div>
+        </RouterLink>
+
+        <RouterLink 
+          to="/student/applications"
+          class="p-4 border border-slate-200 rounded-lg hover:border-brand-300 hover:shadow-md transition-all"
+        >
+          <div class="text-center">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span class="text-2xl">📋</span>
+            </div>
+            <h3 class="font-medium text-slate-900">Mes Candidatures</h3>
+            <p class="text-sm text-slate-600 mt-1">Suivi des postulations</p>
+          </div>
+        </RouterLink>
+      </div>
+    </UiCard>
+
+    <!-- Recommended Internships -->
+    <RecommendedInternships />
+
+    <!-- Application Tracking -->
+    <ApplicationTracking />
+
+    <!-- Next Steps -->
     <UiCard v-if="profile" title="Prochaines étapes" subtitle="Pour maximiser vos chances">
       <ul class="space-y-3 text-sm text-slate-600">
         <li class="flex gap-3">
@@ -72,11 +132,11 @@ onMounted(async () => {
         </li>
         <li class="flex gap-3">
           <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">2</span>
-          Parcourez le catalogue et postulez aux offres qui vous correspondent.
+          Parcourez les recommandations et postulez aux offres qui vous correspondent.
         </li>
         <li class="flex gap-3">
           <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">3</span>
-          Suivez vos candidatures depuis le menu latéral.
+          Suivez vos candidatures et restez attentif aux notifications.
         </li>
       </ul>
     </UiCard>
